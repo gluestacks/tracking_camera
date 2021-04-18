@@ -142,11 +142,11 @@ while True:
     t4 = time.perf_counter()
     print(f'{counter}: {1/(t4-t3):.2f} Hz')
     
-    if 1/(t4-t3) >= 15:
-        x_deg_face = 1500
-        y_deg_face = 1700
-        pi.set_servo_pulsewidth(13, x_deg_face)
-        pi.set_servo_pulsewidth(26, y_deg_face)
+##    if 1/(t4-t3) >= 13:
+##        x_deg_face = 1500
+##        y_deg_face = 1700
+##        pi.set_servo_pulsewidth(13, x_deg_face)
+##        pi.set_servo_pulsewidth(26, y_deg_face)
     
     if cv2.waitKey(1) &0xFF == ord('q'):
         break
