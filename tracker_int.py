@@ -1,6 +1,3 @@
-#!/usr/bin/python3.7
-#sudo python/home/cam/tracker_int.py
-
 from mtcnn.mtcnn import MTCNN
 import cv2
 import sys
@@ -10,6 +7,12 @@ import time
 import sys
 from time import sleep
 from math import sin, cos, radians
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+ledPin = 7
+GPIO.setup(ledPin, GPIO.OUT)
 
 detector = MTCNN()
 
@@ -19,19 +22,21 @@ servo_step_y = 0
 detection_factor = 0
 factor = 0
 
+GPIO.output(ledPin, GPIO.LOW)
+
 settings = input("New or Standard Settings?: ")
 if settings == "standard":
     video_feed = 0
     detection_factor = 0.7
     factor = 0.5
-    while int(servo_step_x) < 1 or int(servo_step_x) > 20:
-        servo_step_x = input("Servo Step Size X-Direction (between 20 and 0): ")
+    while int(servo_step_x) < 10 or int(servo_step_x) > 30:
+        servo_step_x = input("Servo Step Size X-Direction (between 30 and 10): ")
         if servo_step_x == "q":
             sys.exit()
     servo_step_x = int(servo_step_x)
 
-    while int(servo_step_y) < 1 or int(servo_step_y) > 20:
-        servo_step_y = input("Servo Step Size Y-Direction (between 20 and 0): ")
+    while int(servo_step_y) < 10 or int(servo_step_y) > 30:
+        servo_step_y = input("Servo Step Size Y-Direction (between 30 and 10): ")
         if servo_step_y == "q":
             sys.exit()
     servo_step_y = int(servo_step_y)
@@ -143,12 +148,13 @@ while True:
     cv2.rectangle(frame, (x_, y_), (x_+w_, y_+h_), clrs_6, 2)
     t2 = time.perf_counter()
     looptime = t2 - t1
+    GPIO.output(ledPin, GPIO.HIGH)
     if default == 0 or looptime >= 0.5:
         result = detector.detect_faces(bigger_frame)
         
         if result != []:
             undetected = 0
-            for face in result:
+            for face in result[:1]:
                 bbox = face['box']
                 x = int(bbox[0]*(factor/detection_factor))
                 y = int(bbox[1]*(factor/detection_factor))
@@ -255,6 +261,7 @@ while True:
             goal_angle_y = y_deg_face + deg_change_face_y
             y_deg_face += servo_step_y
             pi.set_servo_pulsewidth(26, y_deg_face)
+    #GPIO.output(ledPin, GPIO.LOW)
     cv2.imshow('frame', frame)
     t4 = time.perf_counter()
     print(f'{counter}: {1/(t4-t3):.2f} Hz')
@@ -266,6 +273,7 @@ while True:
 ##        pi.set_servo_pulsewidth(26, y_deg_face)
     
     if cv2.waitKey(1) &0xFF == ord('q'):
+        GPIO.output(ledPin, GPIO.LOW)
         break
         
         
