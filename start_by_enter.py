@@ -1,4 +1,4 @@
 import os
 while True:
     input("Press Enter")
-    os.system('python3 /home/pi/cam/MTCNN/MTCNN_test3.py')
+    os.system('python3 /home/pi/tracking_camera/prototype_v1_final.py')
