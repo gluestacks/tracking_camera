@@ -11,13 +11,15 @@ import time
 #LED
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
-ledPin_green = 7
-ledPin_red = 11
-ledPin_white = 40
+ledPin_green = 11
+ledPin_red = 7
+ledPin_blue = 40
 GPIO.setup(ledPin_green, GPIO.OUT)
 GPIO.setup(ledPin_red, GPIO.OUT)
-GPIO.setup(ledPin_white, GPIO.OUT)
-GPIO.output(ledPin_white, GPIO.HIGH)
+GPIO.setup(ledPin_blue, GPIO.OUT)
+GPIO.output(ledPin_red, GPIO.HIGH)
+GPIO.output(ledPin_green, GPIO.HIGH)
+GPIO.output(ledPin_blue, GPIO.HIGH)
 
 #Video
 cap = cv2.VideoCapture(0)
@@ -41,8 +43,8 @@ x_deg_face = 1500
 y_deg_face = 1700
 pi.set_servo_pulsewidth(13, x_deg_face)
 pi.set_servo_pulsewidth(26, y_deg_face)
-x_ = int(220*factor)
-y_ = int(170*factor)
+x_ = int(180*factor)
+y_ = int(140*factor)
 w_ = int(640*factor-2*(x_))
 h_ = int(480*factor-2*(y_))
 x_old = 0
@@ -131,7 +133,7 @@ def old_coordinate_save(recent_x, recent_y, recent_w, recent_h):
 
 ##---Detection, Tracking, and Movement---##
 while True:
-    GPIO.output(ledPin_white, GPIO.LOW)
+    GPIO.output(ledPin_blue, GPIO.LOW)
     __, max_frame = cap.read()
     t3 = time.perf_counter()
     bigger_frame = cv2.resize(max_frame, (0,0), fx= detection_factor, fy= detection_factor)
@@ -200,7 +202,7 @@ while True:
     if cv2.waitKey(1) &0xFF == ord('0'):
         GPIO.output(ledPin_green, GPIO.LOW)
         GPIO.output(ledPin_red, GPIO.LOW)
-        GPIO.output(ledPin_white, GPIO.LOW)
+        GPIO.output(ledPin_blue, GPIO.LOW)
         break
         
         
