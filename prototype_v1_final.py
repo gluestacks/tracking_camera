@@ -31,7 +31,7 @@ detection_factor = 0.7
 detector = MTCNN()
 
 #Tracking
-factor = 0.5
+factor = 0.4
 tracker = cv2.TrackerCSRT_create()
 
 #Servo Movement
@@ -141,7 +141,7 @@ while True:
     cv2.rectangle(frame, (x_, y_), (x_+w_, y_+h_), clr_main, 2)
     t2 = time.perf_counter()
     looptime = t2 - t1
-    if default == 0 or looptime >= 0.5:
+    if default == 0 or looptime >= 0.4:
         result = detector.detect_faces(bigger_frame)
         
         if result != []:
@@ -198,15 +198,27 @@ while True:
     cv2.imshow('frame', frame)
     t4 = time.perf_counter()
     print(f'{counter}: {1/(t4-t3):.2f} Hz')
-    
-    if cv2.waitKey(1) &0xFF == ord('0'):
+
+    key = cv2.waitKey(1) &0xFF
+    if key == ord('0'):
         GPIO.output(ledPin_green, GPIO.LOW)
         GPIO.output(ledPin_red, GPIO.LOW)
         GPIO.output(ledPin_blue, GPIO.LOW)
         break
-        
-        
-        
+
+    elif key == ord('6'):
+        x_deg_face += 2*servo_step_x
+        pi.set_servo_pulsewidth(13, x_deg_face)
+    elif key == ord('4'):
+        x_deg_face -= 2*servo_step_x
+        pi.set_servo_pulsewidth(13, x_deg_face)
+    elif key == ord('8'):
+        y_deg_face += 2*servo_step_y
+        pi.set_servo_pulsewidth(26, y_deg_face)
+    elif key == ord('2'):
+        y_deg_face -= 2*servo_step_y
+        pi.set_servo_pulsewidth(26, y_deg_face)
+
 cap.release()
 cv2.destroyAllWindows()
 
