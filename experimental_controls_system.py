@@ -91,6 +91,7 @@ def servo_movement(box_x, box_y, box_width, box_height):
     if box_x < x_ and box_x + box_width > x_+w_:
         pass
     else:
+        print(y_deg_face)
         if (y_ + h_) <= (box_y + 2*box_height/3):
             if 1650 <= y_deg_face <= 2050:
                 if box_width*box_height > 3500:
@@ -148,85 +149,88 @@ def old_coordinate_save(recent_x, recent_y, recent_w, recent_h):
     w_old = recent_w
     h_old = recent_h
 
-##---Main---##
+##---Detection, Tracking, and Movement---##
 while True:
     GPIO.output(ledPin_blue, GPIO.LOW)
     __, max_frame = cap.read()
+    t3 = time.perf_counter()
     bigger_frame = cv2.resize(max_frame, (0,0), fx= detection_factor, fy= detection_factor)
     frame = cv2.resize(max_frame, (0,0), fx= factor, fy= factor)
     cv2.rectangle(frame, (x_, y_), (x_+w_, y_+h_), clr_main, 2)
     t2 = time.perf_counter()
     looptime = t2 - t1
+    if detection_tf:
+        if default == 0 or looptime >= 0.4:
+            result = detector.detect_faces(bigger_frame)
+            
+            if result != []:
+                GPIO.output(ledPin_red, GPIO.LOW)
+                GPIO.output(ledPin_green, GPIO.HIGH)
+                undetected = 0
+                for face in result[:1]:
+                    bbox = face['box']
+                    x = int(bbox[0]*(factor/detection_factor))
+                    y = int(bbox[1]*(factor/detection_factor))
+                    w = int(bbox[2]*(factor/detection_factor))
+                    h = int(bbox[3]*(factor/detection_factor))
+                    old_coordinate_save(x, y, w, h)
+                    servo_movement(x, y, w, h)
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0,155,255), 2)
+                    tracker = cv2.TrackerCSRT_create()
+                    tracker.init(frame, (x,y,w,h))
+                    t1 = time.perf_counter()
+                    default = 1
 
-    if default == 0 or looptime >= 0.4:
-        result = detector.detect_faces(bigger_frame)
-        
-        if result != []:
+            else:
+                if undetected == 0:
+                    undetected = 1
+                    undetected_goal(x_old, y_old, w_old, h_old, factor)
+                GPIO.output(ledPin_red, GPIO.HIGH)
+                GPIO.output(ledPin_green, GPIO.LOW)
+                if (x_ + w_) <= (x_old + 2*w_old/3) and deg_change_face_x >= 0:
+                    deg_change_face_x -= servo_step_x
+                    x_deg_face -= servo_step_x
+                    pi.set_servo_pulsewidth(13, x_deg_face)
+                elif x_old + w_old/3 <= x_ and deg_change_face_x >= 0:
+                    deg_change_face_x -= servo_step_x
+                    x_deg_face += servo_step_x
+                    pi.set_servo_pulsewidth(13, x_deg_face)
+                if (y_ + h_) <= (y_old + 2*h_old/3) and deg_change_face_y >= 0:
+                    if 1650 <= y_deg_face <= 2050:
+                        deg_change_face_y -= servo_step_y
+                        y_deg_face -= servo_step_y
+                        pi.set_servo_pulsewidth(26, y_deg_face)
+                    elif y_deg_face < 1650:
+                        y_deg_face = 1650
+                        pi.set_servo_pulsewidth(26, y_deg_face)
+                    elif y_deg_face > 2050:
+                        y_deg_face = 2050
+                        pi.set_servo_pulsewidth(26, y_deg_face)
+                elif y_old + h_old/3 <= y_ and deg_change_face_y >= 0:
+                    if 1650 <= y_deg_face <= 2050:
+                        deg_change_face_y -= servo_step_y
+                        y_deg_face += servo_step_y
+                        pi.set_servo_pulsewidth(26, y_deg_face)
+                    elif y_deg_face < 1650:
+                        y_deg_face = 1650
+                        pi.set_servo_pulsewidth(26, y_deg_face)
+                    elif y_deg_face > 2050:
+                        y_deg_face = 2050
+                        pi.set_servo_pulsewidth(26, y_deg_face)
+                    
+        else:
+            (success, box) = tracker.update(frame)
             GPIO.output(ledPin_red, GPIO.LOW)
             GPIO.output(ledPin_green, GPIO.HIGH)
-            undetected = 0
-            for face in result[:1]:
-                bbox = face['box']
-                x = int(bbox[0]*(factor/detection_factor))
-                y = int(bbox[1]*(factor/detection_factor))
-                w = int(bbox[2]*(factor/detection_factor))
-                h = int(bbox[3]*(factor/detection_factor))
+            if success:
+                (x, y, w, h) = [int(v) for v in box]
                 old_coordinate_save(x, y, w, h)
-                servo_movement(x, y, w, h)
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0,155,255), 2)
-                tracker = cv2.TrackerCSRT_create()
-                tracker.init(frame, (x,y,w,h))
-                t1 = time.perf_counter()
-                default = 1
-
-        else:
-            if undetected == 0:
-                undetected = 1
-                undetected_goal(x_old, y_old, w_old, h_old, factor)
-            GPIO.output(ledPin_red, GPIO.HIGH)
-            GPIO.output(ledPin_green, GPIO.LOW)
-            if (x_ + w_) <= (x_old + 2*w_old/3) and deg_change_face_x >= 0:
-                deg_change_face_x -= servo_step_x
-                x_deg_face -= servo_step_x
-                pi.set_servo_pulsewidth(13, x_deg_face)
-            elif x_old + w_old/3 <= x_ and deg_change_face_x >= 0:
-                deg_change_face_x -= servo_step_x
-                x_deg_face += servo_step_x
-                pi.set_servo_pulsewidth(13, x_deg_face)
-            if (y_ + h_) <= (y_old + 2*h_old/3) and deg_change_face_y >= 0:
-                if 1650 <= y_deg_face <= 2050:
-                    deg_change_face_y -= servo_step_y
-                    y_deg_face -= servo_step_y
-                    pi.set_servo_pulsewidth(26, y_deg_face)
-                elif y_deg_face < 1650:
-                    y_deg_face = 1650
-                    pi.set_servo_pulsewidth(26, y_deg_face)
-                elif y_deg_face > 2050:
-                    y_deg_face = 2050
-                    pi.set_servo_pulsewidth(26, y_deg_face)
-            elif y_old + h_old/3 <= y_ and deg_change_face_y >= 0:
-                if 1650 <= y_deg_face <= 2050:
-                    deg_change_face_y -= servo_step_y
-                    y_deg_face += servo_step_y
-                    pi.set_servo_pulsewidth(26, y_deg_face)
-                elif y_deg_face < 1650:
-                    y_deg_face = 1650
-                    pi.set_servo_pulsewidth(26, y_deg_face)
-                elif y_deg_face > 2050:
-                    y_deg_face = 2050
-                    pi.set_servo_pulsewidth(26, y_deg_face)
-                    
-    else:
-        (success, box) = tracker.update(frame)
-        GPIO.output(ledPin_red, GPIO.LOW)
-        GPIO.output(ledPin_green, GPIO.HIGH)
-        if success:
-            (x, y, w, h) = [int(v) for v in box]
-            old_coordinate_save(x, y, w, h)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        servo_movement(x, y, w, h)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            servo_movement(x, y, w, h)
 
     cv2.imshow('frame', frame)
+    t4 = time.perf_counter()
+    #print(f'{counter}: {1/(t4-t3):.2f} Hz')
 
     key = cv2.waitKey(1) &0xFF
     if key == ord('0'):
@@ -234,6 +238,7 @@ while True:
         GPIO.output(ledPin_red, GPIO.LOW)
         GPIO.output(ledPin_blue, GPIO.LOW)
         break
+
     elif key == ord('6'):
         x_deg_face += 2*servo_step_x
         pi.set_servo_pulsewidth(13, x_deg_face)
@@ -266,6 +271,12 @@ while True:
         y_deg_face -= 2*servo_step_y
         pi.set_servo_pulsewidth(13, x_deg_face)
         pi.set_servo_pulsewidth(26, y_deg_face)
+##    elif key == ord('5'):
+##        if detection_tf:
+##            detection_tf = 0
+##        else:
+##            detection_tf = 1
 
 cap.release()
 cv2.destroyAllWindows()
+

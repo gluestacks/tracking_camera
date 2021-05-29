@@ -87,6 +87,49 @@ y_deg_face = 1700
 pi.set_servo_pulsewidth(13, x_deg_face)
 pi.set_servo_pulsewidth(26, y_deg_face)
 
+x_prev = pi.get_servo_pulsewidth(13)
+y_prev = pi.get_servo_pulsewidth(26)
+x_deg_face = 1500
+y_deg_face = 1800
+
+#while x_prev != x_deg_face:
+##    x_diff = x_prev - x_deg_face
+##    if x_diff > 0:
+##        while x_diff > 5:
+##            x_diff =- 5
+##            x_prev =- 5
+##            pi.set_servo_pulsewidth(13, x_prev)
+##        x_prev =- x_diff
+##        pi.set_servo_pulsewidth(13, x_prev)
+##    elif x_diff < 0:
+##        while x_diff < 5:
+##            x_diff =+ 5
+##            x_prev =+ 5
+##            pi.set_servo_pulsewidth(13, x_prev)
+##        x_prev =+ x_diff
+##        pi.set_servo_pulsewidth(13, x_prev)    
+##    else:
+##        break
+##
+##while y_prev != y_deg_face:
+##    y_diff = y_prev - y_deg_face
+##    if x_diff > 0:
+##        while x_diff > 5:
+##            y_diff =- 5
+##            y_prev =- 5
+##            pi.set_servo_pulsewidth(13, y_prev)
+##        y_prev =- y_diff
+##        pi.set_servo_pulsewidth(13, y_prev)
+##    elif y_diff < 0:
+##        while y_diff < 5:
+##            y_diff =+ 5
+##            y_prev =+ 5
+##            pi.set_servo_pulsewidth(13, y_prev)
+##        y_prev =+ y_diff
+##        pi.set_servo_pulsewidth(13, y_prev)    
+##    else:
+##        break
+
 x_ = int(220*factor)
 y_ = int(170*factor)
 w_ = int(640*factor-2*(x_))

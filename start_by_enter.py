@@ -21,4 +21,7 @@ while True:
     GPIO.output(ledPin_green, GPIO.HIGH)
     leave = input("Press 00")
     if leave == "00":
+        GPIO.output(ledPin_red, GPIO.LOW)
+        GPIO.output(ledPin_green, GPIO.LOW)
+        GPIO.output(ledPin_blue, GPIO.LOW)
         sys.exit()
