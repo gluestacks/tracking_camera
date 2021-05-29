@@ -271,11 +271,11 @@ while True:
         y_deg_face -= 2*servo_step_y
         pi.set_servo_pulsewidth(13, x_deg_face)
         pi.set_servo_pulsewidth(26, y_deg_face)
-##    elif key == ord('5'):
-##        if detection_tf:
-##            detection_tf = 0
-##        else:
-##            detection_tf = 1
+    elif key == ord('5'):
+        if detection_tf:
+           detection_tf = 0
+        else:
+           detection_tf = 1
 
 cap.release()
 cv2.destroyAllWindows()
